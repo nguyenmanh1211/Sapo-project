@@ -15,11 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
     private VersionRepository versionRepository;
@@ -43,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Product insert(ProductRequest productRequest) {
         Product product = productRepository.findProductByName(productRequest.getName());
         checkOptions(productRequest.getVersionRequest().getOptionsRequests());
@@ -51,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
                 System.out.println("Sản phẩm đã có sẵn phiên bản này trong hệ thống");
                 return null;
             } else {
-                product = updateProduct(productRequest, product.getId(), product);
+                updateProduct(productRequest, product.getId(), product);
                 return product;
             }
         }
@@ -60,6 +61,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Product update(ProductRequest productRequest, long id) {
         Product product = productRepository.findOneCustom(id);
         checkOptions(productRequest.getVersionRequest().getOptionsRequests());
@@ -73,13 +75,17 @@ public class ProductServiceImpl implements ProductService {
             System.out.println("Sản phẩm đã có sẵn phiên bản này trong hệ thống");
             return null;
         }
-        product = updateProduct(productRequest, id, product);
+        updateProduct(productRequest, id, product);
         return product;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(long id) {
         Product product = productRepository.findOneCustom(id);
+        if(product == null){
+            return;
+        }
         for (Version version : product.getVersions()) {
             for (Option option : version.getOptions()) {
                 optionRepository.delete(option);
@@ -90,32 +96,44 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Version updateVersion(VersionRequest versionRequest, long id) {
-//        Version version = versionRepository.findOneCustom(id);
-//        if (version == null) {
-//            System.out.println("Không tìm thấy phiên bản này!!!");
-//            return null;
-//        }
-//        checkOptions(versionRequest.getOptionsRequests());
-//        for (Option option : version.getOptions()) {
-//            optionRepository.delete(option);
-//        }
-//        for (OptionRequest optionRequest : versionRequest.getOptionsRequests()) {
-//            Option option = new Option();
-//            BeanUtils.copyProperties(optionRequest, option);
-//            option.setVersion(version);
-//            optionRepository.save(option);
-//        }
-//
-//        BeanUtils.copyProperties(versionRequest, version);
-//        version.setModifiedDate(new Date());
-//
-//        versionRepository.save(version);
-//        return version;
-        return null;
+        Version version = versionRepository.findOneCustom(id);
+        if (version == null) {
+            System.out.println("Không tìm thấy phiên bản này!!!");
+            return null;
+        }
+        checkOptions(versionRequest.getOptionsRequests());
+        List<OptionRequest> list = new ArrayList<>();
+        list.addAll(versionRequest.getOptionsRequests());
+        for (OptionRequest optionRequest: versionRequest.getOptionsRequests()){
+            for (Option option: version.getOptions()){
+                if(optionRequest.getName().compareToIgnoreCase(option.getName())==0){
+                    BeanUtils.copyProperties(optionRequest,option);
+                    option.setModifiedDate(new Date());
+                    optionRepository.save(option);
+                    list.remove(optionRequest);
+                }
+            }
+        }
+        if(list!=null) {
+            for (OptionRequest optionRequest : list) {
+                Option option = new Option();
+                BeanUtils.copyProperties(optionRequest, option);
+                option.setCreatedDate(new Date());
+                option.setVersion(version);
+                optionRepository.save(option);
+            }
+        }
+        BeanUtils.copyProperties(versionRequest, version);
+        version.setModifiedDate(new Date());
+
+        versionRepository.save(version);
+        return version;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteVersion(long id) {
         Version version = versionRepository.findOneCustom(id);
         for (Option option : version.getOptions()) {
@@ -125,6 +143,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteOption(long id) {
         optionRepository.delete(optionRepository.getOne(id));
     }
@@ -170,6 +189,7 @@ public class ProductServiceImpl implements ProductService {
         for (OptionRequest optionRequest : productRequest.getVersionRequest().getOptionsRequests()) {
             Option option = new Option();
             BeanUtils.copyProperties(optionRequest, option);
+            option.setCreatedDate(new Date());
             option.setVersion(version);
             optionRepository.save(option);
         }
@@ -183,12 +203,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private List<OptionRequest> checkOptions(List<OptionRequest> options) {
-        for (int i = 0; i < options.size(); i++)
-            for (int j = i + 1; j < options.size(); j++) {
-                if (options.get(i).getName().equals(options.get(j).getName())) {
-                    options.remove(options.get(i));
+        if(options != null && options.size()>1) {
+            for (int i = 0; i < options.size(); i++)
+                for (int j = i + 1; j < options.size(); j++) {
+                    if (options.get(i).getName().equals(options.get(j).getName())) {
+                        options.remove(options.get(i));
+                    }
                 }
-            }
+        }
         return options;
     }
 }

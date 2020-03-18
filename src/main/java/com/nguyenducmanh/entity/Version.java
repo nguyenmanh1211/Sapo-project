@@ -12,7 +12,7 @@ import java.util.Set;
 @Entity
 @Table(name = "version")
 public class Version extends Base {
-    @Column(name ="name_version")
+    @Column(name = "name_version", nullable = false)
     private String nameVersion;
 
     @Column(name = "created_date")
@@ -23,9 +23,42 @@ public class Version extends Base {
 
     @Column(name = "image")
     private String image;
+
+    @Column(name = "price")
+    private Integer price;
+
     @Column(name = "amount")
     private long amount;
 
+    @Column(name = "ram")
+    private Integer ram;
+
+    @Column(name = "cpu")
+    private String cpu;
+
+    @Column(name = "gpu")
+    private String gpu;
+
+    @Column(name = "display")
+    private String display;
+
+    @Column(name = "camera")
+    private String camera;
+
+    @Column(name = "status",columnDefinition = "int default 1")
+    private Integer status;
+
+    @Column(name = "battery")
+    private String battery;
+
+    @Column(name = "memory")
+    private String memory;
+
+    @Column(name = "color")
+    private String color;
+
+    @Column(name = "discount_rates",columnDefinition = "float default 1.00")
+    private float discountRates;
 
     @JsonIgnore
     @ManyToOne
@@ -89,5 +122,93 @@ public class Version extends Base {
 
     public void setAmount(long amount) {
         this.amount = amount;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public Integer getRam() {
+        return ram;
+    }
+
+    public void setRam(Integer ram) {
+        this.ram = ram;
+    }
+
+    public String getCpu() {
+        return cpu;
+    }
+
+    public void setCpu(String cpu) {
+        this.cpu = cpu;
+    }
+
+    public String getGpu() {
+        return gpu;
+    }
+
+    public void setGpu(String gpu) {
+        this.gpu = gpu;
+    }
+
+    public String getDisplay() {
+        return display;
+    }
+
+    public void setDisplay(String display) {
+        this.display = display;
+    }
+
+    public String getCamera() {
+        return camera;
+    }
+
+    public void setCamera(String camera) {
+        this.camera = camera;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getBattery() {
+        return battery;
+    }
+
+    public void setBattery(String battery) {
+        this.battery = battery;
+    }
+
+    public String getMemory() {
+        return memory;
+    }
+
+    public void setMemory(String memory) {
+        this.memory = memory;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public float getDiscountRates() {
+        return discountRates;
+    }
+
+    public void setDiscountRates(float discountRates) {
+        this.discountRates = discountRates;
     }
 }

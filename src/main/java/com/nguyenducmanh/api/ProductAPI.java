@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -18,7 +19,7 @@ public class ProductAPI {
     private ProductService productService;
 
     @PostMapping("/product")
-    public ResponseEntity<Product> insert(@RequestBody ProductRequest productRequest){
+    public ResponseEntity<Product> insert(@Valid @RequestBody ProductRequest productRequest){
         return ResponseEntity.ok(productService.insert(productRequest));
     }
 

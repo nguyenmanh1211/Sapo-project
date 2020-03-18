@@ -1,9 +1,16 @@
 package com.nguyenducmanh.model.request;
 
+import com.nguyenducmanh.annotation.Version;
+import javax.validation.Valid;
+
+@Version(field = "name",
+        fieldMatch = "versionRequest")
 public class ProductRequest {
     private String name;
     private String producer;
     private String image;
+    @Valid
+
     private VersionRequest versionRequest;
 
     public String getName() {
@@ -37,4 +44,5 @@ public class ProductRequest {
     public void setImage(String image) {
         this.image = image;
     }
+
 }
